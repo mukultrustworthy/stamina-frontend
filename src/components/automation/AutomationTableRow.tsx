@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { AutomationTableActions } from "./AutomationTableActions";
+import { useNavigate } from "react-router-dom";
 
 interface AutomationFlow {
   id: string;
@@ -17,8 +18,12 @@ interface AutomationTableRowProps {
 }
 
 export function AutomationTableRow({ flow }: AutomationTableRowProps) {
+  const navigate = useNavigate();
   return (
-    <TableRow className="hover:bg-muted cursor-pointer">
+    <TableRow
+      className="hover:bg-muted cursor-pointer"
+      onClick={() => navigate(`/workflow/${flow.name}`)}
+    >
       <TableCell className="font-medium pl-6">{flow.name}</TableCell>
       <TableCell>
         <Badge

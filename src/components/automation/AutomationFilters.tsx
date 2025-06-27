@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NewWorkflowDialog } from "./NewWorkflowDialog";
+import { NewWorkflowDialog } from "./workflow/NewWorkflowDialog";
 
 export function AutomationFilters() {
   const [isNewWorkflowDialogOpen, setIsNewWorkflowDialogOpen] = useState(false);

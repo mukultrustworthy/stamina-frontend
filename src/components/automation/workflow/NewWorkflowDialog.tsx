@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ export function NewWorkflowDialog({
   onOpenChange,
 }: NewWorkflowDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<WorkflowFormData>({
     resolver: zodResolver(workflowSchema),
@@ -57,9 +59,22 @@ export function NewWorkflowDialog({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      // Generate slug from workflow name
+      const slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+
       // Reset form and close dialog
       form.reset();
       onOpenChange(false);
+
+      // Navigate to workflow editor with slug
+      navigate(`/workflow/${slug}`, {
+        state: { workflowName: data.name, isNew: true },
+      });
     } catch (error) {
       console.error("Error creating workflow:", error);
     } finally {
