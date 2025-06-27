@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export function HomePage() {
   return (
@@ -11,18 +12,16 @@ export function HomePage() {
         habits.
       </p>
       <div className="flex flex-wrap gap-4 justify-center">
-        <Link
-          to="/users"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-block"
-        >
-          View Users Demo
-        </Link>
-        <Link
-          to="/about"
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-block"
-        >
-          Learn More
-        </Link>
+        <div className="flex flex-col items-center justify-center">
+          <Button variant="outline">
+            <Link to="/users">View Users Demo</Link>
+          </Button>
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <Button variant="outline">
+            <Link to="/about">About</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
