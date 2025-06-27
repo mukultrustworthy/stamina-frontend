@@ -3,6 +3,8 @@ import { HomePage } from "../pages/HomePage";
 import { AboutPage } from "../pages/AboutPage";
 import { UsersPage } from "../pages/UsersPage";
 import { DashboardPage } from "../pages/DashboardPage";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 const router = createBrowserRouter([
   {
@@ -24,5 +26,10 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
-  return <RouterProvider router={router} />;
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <RouterProvider router={router} />
+    </SidebarProvider>
+  );
 }

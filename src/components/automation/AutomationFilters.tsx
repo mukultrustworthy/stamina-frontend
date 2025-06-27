@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Search, ChevronDown, Plus, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,8 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NewWorkflowDialog } from "./NewWorkflowDialog";
 
 export function AutomationFilters() {
+  const [isNewWorkflowDialogOpen, setIsNewWorkflowDialogOpen] = useState(false);
   return (
     <div className="flex items-center gap-3 px-8 py-4 justify-between">
       <div className="flex items-center gap-2">
@@ -46,11 +49,19 @@ export function AutomationFilters() {
           <Search className="h-4 w-4 text-muted-foreground" />
         </Button>
 
-        <Button className="gap-2">
+        <Button
+          className="gap-2"
+          onClick={() => setIsNewWorkflowDialogOpen(true)}
+        >
           <Plus className="h-4 w-4" />
           New Workflow
         </Button>
       </div>
+
+      <NewWorkflowDialog
+        open={isNewWorkflowDialogOpen}
+        onOpenChange={setIsNewWorkflowDialogOpen}
+      />
     </div>
   );
 }
