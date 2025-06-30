@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Handle, Position } from "@xyflow/react";
 import { Edit, X, Plus } from "lucide-react";
 
-interface NodeData extends Record<string, unknown> {
+// Specific node data properties
+interface BaseNodeData {
   title: string;
   description: string;
   icon: React.ReactNode;
@@ -15,7 +16,12 @@ interface NodeData extends Record<string, unknown> {
   emailTemplate?: string;
   propertyName?: string;
   propertyValue?: string;
+  // Registry information
+  registryKey?: string;
 }
+
+// Intersection type for React Flow compatibility while maintaining type safety
+type NodeData = BaseNodeData & Record<string, unknown>;
 
 interface ActionNodeProps {
   data: NodeData;

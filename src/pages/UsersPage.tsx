@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetUsers, useCreateUser } from "../hooks/useUsers";
+import { UsersList } from "../components/users/UsersList";
 
 export function UsersPage() {
   const [newUserName, setNewUserName] = useState("");
@@ -132,24 +133,7 @@ export function UsersPage() {
         {/* Users List */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-gray-900">All Users</h2>
-          {users && users.length > 0 ? (
-            <div className="grid gap-4">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
-                >
-                  <h3 className="font-semibold text-lg">{user.name}</h3>
-                  <p className="text-gray-600">{user.email}</p>
-                  <p className="text-sm text-gray-500">
-                    Created: {new Date(user.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No users found</p>
-          )}
+          <UsersList users={users} />
         </div>
       </div>
     </div>

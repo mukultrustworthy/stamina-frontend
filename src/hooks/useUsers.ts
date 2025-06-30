@@ -1,21 +1,51 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import type { User, CreateUserDto, UpdateUserDto } from "../api/users";
 import { getUsers, getUser, createUser, updateUser } from "../api/users";
 
+// Error type for API responses
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
+// Query keys
+const userKeys = {
+  all: ["users"] as const,
+  lists: () => [...userKeys.all, "list"] as const,
+  list: (filters: Record<string, unknown>) =>
+    [...userKeys.lists(), { filters }] as const,
+  details: () => [...userKeys.all, "detail"] as const,
+  detail: (id: string) => [...userKeys.details(), id] as const,
+};
+
 // Query hooks
-export const useGetUsers = (enabled = true) => {
-  return useQuery<User[]>({
-    queryKey: ["users"],
+export const useGetUsers = (
+  enabled = true,
+  select?: (data: User[]) => User[]
+) => {
+  return useQuery<User[], Error, User[]>({
+    queryKey: userKeys.lists(),
     queryFn: () => getUsers(),
     enabled,
+    select,
   });
 };
 
-export const useGetUser = (id: string, enabled = true) => {
-  return useQuery<User>({
-    queryKey: ["user", id],
+export const useGetUser = (
+  id: string,
+  enabled = true,
+  select?: (data: User) => User
+) => {
+  return useQuery<User, Error, User>({
+    queryKey: userKeys.detail(id),
     queryFn: () => getUser(id),
     enabled: enabled && !!id,
+    select,
   });
 };
 
@@ -27,17 +57,16 @@ export function useCreateUser(onSuccessCallback?: () => void) {
     mutationFn: (payload: CreateUserDto) => createUser(payload),
     onSuccess: () => {
       // Invalidate users list to refetch
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
       onSuccessCallback?.();
-      // Note: In a real app, you'd use toast here
-      console.log("User created successfully");
+      toast.success("User created successfully");
     },
-    onError: (error: unknown) => {
+    onError: (error: ApiError) => {
       const errorMessage =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || "Failed to create user.";
-      // Note: In a real app, you'd use toast here
-      console.error(errorMessage);
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to create user.";
+      toast.error(errorMessage);
     },
   });
 }
@@ -49,18 +78,19 @@ export function useUpdateUser(onSuccessCallback?: () => void) {
     mutationFn: (payload: UpdateUserDto) => updateUser(payload),
     onSuccess: (updatedUser) => {
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user", updatedUser.id] });
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: userKeys.detail(updatedUser.id),
+      });
       onSuccessCallback?.();
-      // Note: In a real app, you'd use toast here
-      console.log("User updated successfully");
+      toast.success("User updated successfully");
     },
-    onError: (error: unknown) => {
+    onError: (error: ApiError) => {
       const errorMessage =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || "Failed to update user.";
-      // Note: In a real app, you'd use toast here
-      console.error(errorMessage);
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update user.";
+      toast.error(errorMessage);
     },
   });
 }

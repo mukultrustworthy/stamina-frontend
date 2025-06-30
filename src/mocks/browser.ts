@@ -11,9 +11,8 @@ export const startMockServiceWorker = async () => {
       await worker.start({
         onUnhandledRequest: "bypass",
       });
-      console.log("🎭 Mock Service Worker started");
-    } catch (error) {
-      console.error("Failed to start Mock Service Worker:", error);
+    } catch {
+      // Mock Service Worker failed to start
     }
   }
 };

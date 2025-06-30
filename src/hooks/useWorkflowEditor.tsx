@@ -5,46 +5,20 @@ import {
   useEdgesState,
   type Connection,
   type Node,
+  type Edge,
 } from "@xyflow/react";
 import { Users, Mail, Settings } from "lucide-react";
-
-interface NodeData extends Record<string, unknown> {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  onDelete?: (nodeId: string) => void;
-  onEdit?: (nodeId: string) => void;
-  canDelete?: boolean;
-  parentId?: string;
-  childId?: string; // Only one child per node
-  emailSubject?: string;
-  emailTemplate?: string;
-  propertyName?: string;
-  propertyValue?: string;
-}
-
-interface NodeRelation {
-  parentId?: string;
-  childId?: string; // Only one child per node
-}
-
-type ActionType = "send-email" | "update-properties" | "update-property";
-
-interface ActionNodeData {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  emailSubject?: string;
-  emailTemplate?: string;
-  propertyName?: string;
-  propertyValue?: string;
-}
+import {
+  type NodeData,
+  type NodeRelation,
+  type ActionType,
+  type ActionNodeData,
+} from "./workflow/types";
+import { useNodeManager } from "./workflow/useNodeManager";
+import { useDialogManager } from "./workflow/useDialogManager";
 
 export function useWorkflowEditor(initialWorkflowName: string) {
   const [workflowName, setWorkflowName] = useState(initialWorkflowName);
-  const [editingNode, setEditingNode] = useState<Node<NodeData> | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isActionSelectionOpen, setIsActionSelectionOpen] = useState(false);
 
   // Parent-child relationship tracking (single child per node)
   const [nodeRelations, setNodeRelations] = useState<
@@ -67,6 +41,7 @@ export function useWorkflowEditor(initialWorkflowName: string) {
         icon: <Users className="w-5 h-5 text-blue-600" />,
         canDelete: false,
         childId: "action-1",
+        registryKey: "lead_created", // Default trigger key
       },
     },
     {
@@ -83,6 +58,7 @@ export function useWorkflowEditor(initialWorkflowName: string) {
         emailSubject: "Welcome to our platform!",
         emailTemplate:
           "Hi there! Welcome to our platform. We're excited to have you on board.",
+        registryKey: "send_email", // Default action key
       },
     },
   ];
@@ -100,99 +76,29 @@ export function useWorkflowEditor(initialWorkflowName: string) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  // Use extracted hooks
+  const dialogManager = useDialogManager();
+  const nodeManager = useNodeManager({
+    nodes,
+    setNodes,
+    nodeRelations,
+    setNodeRelations,
+    setEdges: setEdges as (edges: Edge[] | ((edges: Edge[]) => Edge[])) => void,
+  });
+
   const handleEditNode = useCallback(
     (nodeId: string) => {
-      const node = nodes.find((n) => n.id === nodeId) as
-        | Node<NodeData>
-        | undefined;
+      const node = nodeManager.handleEditNode(nodeId);
       if (node) {
-        setEditingNode(node);
-        setIsEditDialogOpen(true);
+        dialogManager.openEditDialog(node);
       }
     },
-    [nodes]
+    [nodeManager, dialogManager]
   );
 
-  const handleSaveNodeEdit = useCallback(
-    (nodeId: string, updatedData: Partial<NodeData>) => {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id === nodeId) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                ...updatedData,
-              },
-            } as Node<NodeData>;
-          }
-          return node as Node<NodeData>;
-        })
-      );
-    },
-    [setNodes]
-  );
+  const handleSaveNodeEdit = nodeManager.handleSaveNodeEdit;
 
-  const handleDeleteNode = useCallback(
-    (nodeId: string) => {
-      // Don't allow deleting trigger nodes
-      const nodeToDelete = nodes.find((node) => node.id === nodeId);
-      if (nodeToDelete?.type === "trigger") return;
-
-      const relation = nodeRelations[nodeId];
-      if (!relation) return;
-
-      // Update parent's child reference
-      if (relation.parentId) {
-        setNodeRelations((prev) => ({
-          ...prev,
-          [relation.parentId!]: {
-            ...prev[relation.parentId!],
-            childId: relation.childId, // Pass the child to the parent
-          },
-        }));
-      }
-
-      // Update child's parent reference
-      if (relation.childId) {
-        setNodeRelations((prev) => ({
-          ...prev,
-          [relation.childId!]: {
-            ...prev[relation.childId!],
-            parentId: relation.parentId, // Connect child to grandparent
-          },
-        }));
-      }
-
-      // Remove node from relations
-      setNodeRelations((prev) => {
-        const newRelations = { ...prev };
-        delete newRelations[nodeId];
-        return newRelations;
-      });
-
-      // Remove the node
-      setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-
-      // Remove edges connected to this node
-      setEdges((eds) =>
-        eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
-      );
-
-      // Reconnect parent to child if both exist
-      if (relation.parentId && relation.childId) {
-        const newEdge = {
-          id: `e-${relation.parentId}-${relation.childId}`,
-          source: relation.parentId,
-          sourceHandle: "a",
-          target: relation.childId,
-          type: "straight",
-        };
-        setEdges((eds) => [...eds, newEdge]);
-      }
-    },
-    [nodes, nodeRelations, setNodes, setEdges]
-  );
+  const handleDeleteNode = nodeManager.handleDeleteNode;
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -200,28 +106,51 @@ export function useWorkflowEditor(initialWorkflowName: string) {
   );
 
   const getActionData = useCallback((type: ActionType): ActionNodeData => {
-    const actions = {
+    const actions: Record<ActionType, ActionNodeData> = {
       "send-email": {
         title: "Send Email",
         description: "Send an email to the person",
         icon: <Mail className="w-5 h-5 text-green-600" />,
+        registryKey: "send_email",
         emailSubject: "Welcome Email",
         emailTemplate:
           "Hello! Welcome to our platform. We're excited to have you on board.",
       },
-      "update-properties": {
-        title: "Update Properties",
-        description: "Update person properties and attributes",
+      "create-task": {
+        title: "Create Task",
+        description: "Create a follow-up task",
         icon: <Settings className="w-5 h-5 text-green-600" />,
-        propertyName: "status",
-        propertyValue: "active",
+        registryKey: "create_task",
       },
-      "update-property": {
-        title: "Update Property",
-        description: "Update a specific person property",
+      "update-lead-status": {
+        title: "Update Lead Status",
+        description: "Update lead status and properties",
+        icon: <Users className="w-5 h-5 text-green-600" />,
+        registryKey: "update_lead_status",
+      },
+      "http-request": {
+        title: "HTTP Request",
+        description: "Make HTTP requests to external APIs",
+        icon: <Settings className="w-5 h-5 text-blue-600" />,
+        registryKey: "http_request",
+      },
+      "ai-generate-text": {
+        title: "AI Generate Text",
+        description: "Generate text using AI models",
+        icon: <Mail className="w-5 h-5 text-purple-600" />,
+        registryKey: "ai_generate_text",
+      },
+      "database-query": {
+        title: "Database Query",
+        description: "Execute database queries and operations",
         icon: <Settings className="w-5 h-5 text-green-600" />,
-        propertyName: "category",
-        propertyValue: "premium",
+        registryKey: "database_query",
+      },
+      "transform-data": {
+        title: "Transform Data",
+        description: "Transform and manipulate data",
+        icon: <Settings className="w-5 h-5 text-yellow-600" />,
+        registryKey: "transform_data",
       },
     };
     return actions[type] || actions["send-email"];
@@ -319,39 +248,30 @@ export function useWorkflowEditor(initialWorkflowName: string) {
   );
 
   const handleSave = useCallback(() => {
-    console.log("Saving workflow:", workflowName, {
+    // TODO: Implement save functionality
+    console.log("Saving workflow:", {
+      workflowName,
       nodes,
       edges,
-      relations: nodeRelations,
+      nodeRelations,
     });
-    // TODO: Implement save functionality
   }, [workflowName, nodes, edges, nodeRelations]);
 
   const handleStartCampaign = useCallback(() => {
-    console.log("Starting campaign");
     // TODO: Implement start campaign functionality
   }, []);
 
-  const closeEditDialog = useCallback(() => {
-    setIsEditDialogOpen(false);
-    setEditingNode(null);
-  }, []);
-
-  const openActionSelection = useCallback(() => {
-    setIsActionSelectionOpen(true);
-  }, []);
-
-  const closeActionSelection = useCallback(() => {
-    setIsActionSelectionOpen(false);
-  }, []);
+  const closeEditDialog = dialogManager.closeEditDialog;
+  const openActionSelection = dialogManager.openActionSelection;
+  const closeActionSelection = dialogManager.closeActionSelection;
 
   return {
     // State
     workflowName,
     setWorkflowName,
-    editingNode,
-    isEditDialogOpen,
-    isActionSelectionOpen,
+    editingNode: dialogManager.editingNode,
+    isEditDialogOpen: dialogManager.isEditDialogOpen,
+    isActionSelectionOpen: dialogManager.isActionSelectionOpen,
     nodes,
     edges,
     nodeRelations,

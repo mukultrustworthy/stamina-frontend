@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, ChevronDown, Settings, Bell } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -54,6 +55,65 @@ const sidebarSections: SidebarSection[] = [
     children: [],
   },
 ];
+
+// Component for sidebar section with proper props interface
+interface SidebarSectionProps {
+  section: SidebarSection;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+function SidebarSection({
+  section,
+  isExpanded,
+  onToggle,
+}: SidebarSectionProps) {
+  const hasChildren = section.children.length > 0;
+
+  return (
+    <div className="mb-4">
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={hasChildren ? onToggle : undefined}
+          className={cn(
+            "w-full justify-between text-sm font-medium text-gray-600 hover:bg-gray-50",
+            hasChildren && "cursor-pointer"
+          )}
+        >
+          {section.title}
+          {hasChildren && (
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform duration-200",
+                isExpanded && "rotate-180"
+              )}
+            />
+          )}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+
+      {hasChildren && isExpanded && (
+        <div className="ml-4 mt-1 space-y-1 animate-in slide-in-from-top-1 duration-200">
+          {section.children.map((item, itemIndex) => (
+            <SidebarMenuItem key={itemIndex}>
+              <SidebarMenuButton
+                className={cn(
+                  "w-full justify-start text-sm",
+                  item.active
+                    ? "bg-muted text-muted-foreground font-medium"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <span className="mr-2">{item.icon}</span>
+                {item.title}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function AppSidebar() {
   const { open } = useSidebar();
@@ -147,63 +207,5 @@ export function AppSidebar() {
         </div>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-interface SidebarSectionProps {
-  section: SidebarSection;
-  isExpanded: boolean;
-  onToggle: () => void;
-}
-
-function SidebarSection({
-  section,
-  isExpanded,
-  onToggle,
-}: SidebarSectionProps) {
-  const hasChildren = section.children.length > 0;
-
-  return (
-    <div className="mb-4">
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={hasChildren ? onToggle : undefined}
-          className={cn(
-            "w-full justify-between text-sm font-medium text-gray-600 hover:bg-gray-50",
-            hasChildren && "cursor-pointer"
-          )}
-        >
-          {section.title}
-          {hasChildren && (
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                isExpanded && "rotate-180"
-              )}
-            />
-          )}
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-
-      {hasChildren && isExpanded && (
-        <div className="ml-4 mt-1 space-y-1 animate-in slide-in-from-top-1 duration-200">
-          {section.children.map((item, itemIndex) => (
-            <SidebarMenuItem key={itemIndex}>
-              <SidebarMenuButton
-                className={cn(
-                  "w-full justify-start text-sm",
-                  item.active
-                    ? "bg-muted text-muted-foreground font-medium"
-                    : "text-muted-foreground hover:bg-muted"
-                )}
-              >
-                <span className="mr-2">{item.icon}</span>
-                {item.title}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }

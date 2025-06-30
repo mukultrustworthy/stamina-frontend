@@ -15,6 +15,8 @@ export interface NodeData extends Record<string, unknown> {
   emailTemplate?: string;
   propertyName?: string;
   propertyValue?: string;
+  // Registry information
+  registryKey?: string;
 }
 
 interface TriggerNodeProps {

@@ -14,11 +14,11 @@ import {
   type NodeData,
 } from "@/components/automation/workflow/TriggerNode";
 import { ActionNode } from "@/components/automation/workflow/ActionNode";
-import { EditNodeDialog } from "@/components/automation/workflow/EditNodeDialog";
 import { ActionSelectionDialog } from "@/components/automation/workflow/ActionSelectionDialog";
 import { useWorkflowEditor } from "@/hooks/useWorkflowEditor";
+import { WorkflowSidebar } from "@/components/automation/workflow/WorkflowSidebar";
 
-const WorkflowEditorPage = () => {
+export const WorkflowEditorPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,7 +32,6 @@ const WorkflowEditorPage = () => {
     workflowName,
     setWorkflowName,
     editingNode,
-    isEditDialogOpen,
     isActionSelectionOpen,
     nodes,
     edges,
@@ -102,14 +101,13 @@ const WorkflowEditorPage = () => {
             <Background variant={BackgroundVariant.Cross} gap={10} size={2} />
           </ReactFlow>
         </div>
-      </div>
 
-      <EditNodeDialog
-        node={editingNode}
-        isOpen={isEditDialogOpen}
-        onClose={closeEditDialog}
-        onSave={handleSaveNodeEdit}
-      />
+        <WorkflowSidebar
+          selectedNode={editingNode}
+          onSave={handleSaveNodeEdit}
+          onClose={closeEditDialog}
+        />
+      </div>
 
       <ActionSelectionDialog
         open={isActionSelectionOpen}
@@ -119,5 +117,3 @@ const WorkflowEditorPage = () => {
     </div>
   );
 };
-
-export default WorkflowEditorPage;

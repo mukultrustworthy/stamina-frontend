@@ -5,8 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Mail, Settings } from "lucide-react";
-
-type ActionType = "send-email" | "update-properties" | "update-property";
+import type { ActionType } from "@/hooks/useWorkflowEditor";
 
 interface ActionSelectionDialogProps {
   open: boolean;

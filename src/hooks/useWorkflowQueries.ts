@@ -141,12 +141,12 @@ export const useCreateWorkflow = (
       workflowService.createWorkflow(workflow),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
-      toast({ title: "Workflow created successfully", variant: "default" });
+      toast.success("Workflow created successfully");
       onSuccessCallback?.(data);
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to create workflow";
-      toast({ title: errorMessage, variant: "destructive" });
+      toast.error(errorMessage);
     },
   });
 };
@@ -162,12 +162,12 @@ export const useUpdateWorkflow = (
     onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.detail(id) });
-      toast({ title: "Workflow updated successfully", variant: "default" });
+      toast.success("Workflow updated successfully");
       onSuccessCallback?.(data);
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to update workflow";
-      toast({ title: errorMessage, variant: "destructive" });
+      toast.error(errorMessage);
     },
   });
 };
@@ -180,12 +180,12 @@ export const useDeleteWorkflow = (onSuccessCallback?: () => void) => {
     onSuccess: (_, id) => {
       queryClient.removeQueries({ queryKey: workflowQueryKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
-      toast({ title: "Workflow deleted successfully", variant: "default" });
+      toast.success("Workflow deleted successfully");
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to delete workflow";
-      toast({ title: errorMessage, variant: "destructive" });
+      toast.error(errorMessage);
     },
   });
 };
@@ -201,18 +201,15 @@ export const useExecuteWorkflow = (onSuccessCallback?: () => void) => {
     }) => workflowService.executeWorkflow(id, execution),
     onSuccess: (result) => {
       if (result.success) {
-        toast({ title: "Workflow executed successfully", variant: "default" });
+        toast.success("Workflow executed successfully");
         onSuccessCallback?.();
       } else {
-        toast({
-          title: result.error || "Workflow execution failed",
-          variant: "destructive",
-        });
+        toast.error(result.error || "Workflow execution failed");
       }
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to execute workflow";
-      toast({ title: errorMessage, variant: "destructive" });
+      toast.error(errorMessage);
     },
   });
 };
