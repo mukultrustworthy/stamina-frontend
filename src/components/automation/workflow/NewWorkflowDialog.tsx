@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,12 +20,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import { useCreateWorkflow } from "@/hooks/useWorkflowQueries";
+import type { WorkflowSegment } from "@/types/workflow";
 
 const workflowSchema = z.object({
   name: z
     .string()
     .min(1, "Workflow name is required")
     .min(3, "Name must be at least 3 characters"),
+  description: z.string().optional(),
+  segment: z.enum(["CRM", "SALES", "MARKETING"]),
 });
 
 type WorkflowFormData = z.infer<typeof workflowSchema>;
@@ -40,46 +50,48 @@ export function NewWorkflowDialog({
   open,
   onOpenChange,
 }: NewWorkflowDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<WorkflowFormData>({
     resolver: zodResolver(workflowSchema),
     defaultValues: {
       name: "",
+      description: "",
+      segment: "CRM",
     },
   });
 
+  const createWorkflowMutation = useCreateWorkflow((workflow) => {
+    // Reset form and close dialog
+    form.reset();
+    onOpenChange(false);
+
+    // Navigate to workflow editor with the workflow ID
+    navigate(`/workflow/${workflow.id}`, {
+      state: {
+        workflowName: workflow.name,
+        workflowId: workflow.id,
+        isNew: true,
+      },
+    });
+  });
+
   const handleSubmit = async (data: WorkflowFormData) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement workflow creation API call
-      console.log("Creating workflow:", data);
+    // Create a basic workflow structure with minimal trigger and steps
+    const workflowPayload = {
+      name: data.name,
+      description: data.description,
+      segment: data.segment as WorkflowSegment,
+      trigger: {
+        triggerKey: "manual_trigger", // Default trigger for new workflows
+        properties: {},
+      },
+      steps: [], // Start with empty steps - will be configured in editor
+      edges: [], // Start with empty edges
+      isActive: false, // New workflows start inactive
+    };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Generate slug from workflow name
-      const slug = data.name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim();
-
-      // Reset form and close dialog
-      form.reset();
-      onOpenChange(false);
-
-      // Navigate to workflow editor with slug
-      navigate(`/workflow/${slug}`, {
-        state: { workflowName: data.name, isNew: true },
-      });
-    } catch (error) {
-      console.error("Error creating workflow:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    createWorkflowMutation.mutate(workflowPayload);
   };
 
   const handleCancel = () => {
@@ -113,8 +125,66 @@ export function NewWorkflowDialog({
                     <Input
                       placeholder="Enter workflow name..."
                       {...field}
-                      disabled={isSubmitting}
+                      disabled={createWorkflowMutation.isPending}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Describe what this workflow does..."
+                      {...field}
+                      disabled={createWorkflowMutation.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="segment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Segment</FormLabel>
+                  <FormControl>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between"
+                          disabled={createWorkflowMutation.isPending}
+                        >
+                          {field.value}
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-full">
+                        <DropdownMenuItem onClick={() => field.onChange("CRM")}>
+                          CRM
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => field.onChange("SALES")}
+                        >
+                          SALES
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => field.onChange("MARKETING")}
+                        >
+                          MARKETING
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -126,12 +196,14 @@ export function NewWorkflowDialog({
                 type="button"
                 variant="outline"
                 onClick={handleCancel}
-                disabled={isSubmitting}
+                disabled={createWorkflowMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Workflow"}
+              <Button type="submit" disabled={createWorkflowMutation.isPending}>
+                {createWorkflowMutation.isPending
+                  ? "Creating..."
+                  : "Create Workflow"}
               </Button>
             </DialogFooter>
           </form>
