@@ -1,6 +1,19 @@
-import { Badge } from "@/components/ui/badge";
-import { Handle, Position } from "@xyflow/react";
-import { Edit, X, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Copy, Edit, MoreVertical, Plus, Trash } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Specific node data properties
 interface BaseNodeData {
@@ -26,62 +39,83 @@ type NodeData = BaseNodeData & Record<string, unknown>;
 interface ActionNodeProps {
   data: NodeData;
   id: string;
+  selected?: boolean;
   onEdit?: (nodeId: string) => void;
   onDelete?: (nodeId: string) => void;
   onAddAction?: () => void;
+  onInsertAfter?: (nodeId: string) => void; // New prop for inserting after this node
 }
 
 export function ActionNode({
   data,
   id,
+  selected = false,
   onEdit,
   onDelete,
   onAddAction,
+  onInsertAfter,
 }: ActionNodeProps) {
+  const handleNodeClick = () => {
+    (onEdit || data.onEdit)?.(id);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(JSON.stringify(data));
+    toast.success("Node copied to clipboard");
+  };
+
+  const handleRename = () => {
+    (onEdit || data.onEdit)?.(id);
+  };
+
   return (
-    <div className="bg-white border-2 border-green-300 rounded-lg p-4 shadow-md min-w-[280px] relative group">
-      {/* Edit button */}
-      <button
-        onClick={() => (onEdit || data.onEdit)?.(id)}
-        className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center hover:bg-blue-600 z-10"
-      >
-        <Edit className="w-3 h-3" />
-      </button>
-
-      {/* Delete button */}
-      {data.canDelete && (
-        <button
-          onClick={() => (onDelete || data.onDelete)?.(id)}
-          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center hover:bg-red-600 z-10"
-        >
-          <X className="w-3 h-3" />
-        </button>
+    <div
+      className={cn(
+        "bg-white p-4 h-20 border rounded-lg shadow-md w-96 relative group cursor-pointer transition-colors",
+        selected
+          ? "border-blue-800 border-2 shadow-lg bg-blue-50"
+          : "border-gray-200 hover:border-gray-300"
       )}
-
+      onClick={handleNodeClick}
+    >
       <div className="flex items-start space-x-3">
-        <div className="p-2 rounded-lg bg-green-100">{data.icon}</div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2 mb-1">
-            <Badge variant="secondary" className="bg-green-500 text-white">
-              Action (Child)
-            </Badge>
-            {data.parentId && (
-              <Badge variant="outline" className="text-xs">
-                Parent: {data.parentId}
-              </Badge>
-            )}
+        <div className="p-2 rounded-lg bg-gray-100 flex items-center justify-center">
+          {data.icon}
+          <div className="absolute top-2 right-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleRename}>
+                  <Edit className="w-4 h-4" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopy}>
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => (onDelete || data.onDelete)?.(id)}
+                >
+                  <Trash className="w-4 h-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <h4 className="text-sm font-medium text-gray-900 mb-1">
-            {data.title}
-          </h4>
-          <p className="text-xs text-gray-500">{data.description}</p>
-
-          {/* Show additional properties if available */}
-          {data.emailSubject && (
-            <p className="text-xs text-blue-600 mt-1">
-              📧 Subject: {data.emailSubject}
-            </p>
-          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-medium text-gray-900">{data.title}</h4>
+          <p className="text-xs text-gray-500 line-clamp-2">
+            {data.description}
+          </p>
           {data.propertyName && (
             <div className="mt-2 p-2 bg-purple-50 rounded border border-purple-200">
               <p className="text-xs text-purple-700 font-medium">
@@ -95,21 +129,32 @@ export function ActionNode({
         </div>
       </div>
 
-      {/* Plus button to add action */}
-      {!data.childId && onAddAction && (
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-          <button
-            onClick={onAddAction}
-            className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Connection handles */}
-      <Handle type="target" position={Position.Top} id="target" />
-      <Handle type="source" position={Position.Bottom} id="a" />
+      {/* make line from trigger to action */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+        <div className="w-0.5 h-10 bg-black"></div>
+      </div>
+      <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+        <div className="w-0.5 h-10 bg-black"></div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              onClick={(e) => {
+                e.stopPropagation();
+                // Use insertAfter if available, fallback to onAddAction for end-of-chain behavior
+                if (onInsertAfter) {
+                  onInsertAfter(id);
+                } else {
+                  onAddAction?.();
+                }
+              }}
+              className="rounded-full cursor-pointer hover:bg-black hover:text-white size-6 flex items-center justify-center"
+            >
+              <Plus className="w-4 h-4" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Step</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }

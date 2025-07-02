@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { type Node } from "@xyflow/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,7 +70,7 @@ export function EditNodeDialog({
     };
 
     onSave(node.id, updatedData);
-    onClose();
+    toast.success("Node updated successfully");
   };
 
   if (!node) return null;

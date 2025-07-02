@@ -13,6 +13,7 @@ import type {
   FilterGroup,
   PropertySchema,
 } from "@/types/workflow";
+import { toast } from "sonner";
 
 interface NodeData extends Record<string, unknown> {
   title: string;
@@ -140,7 +141,7 @@ export function WorkflowSidebar({
     }
 
     onSave(selectedNode.id, updatedData);
-    onClose();
+    toast.success("Node saved successfully");
   };
 
   const handlePropertyChange = (propertyName: string, value: unknown) => {

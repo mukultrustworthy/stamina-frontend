@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
 import {
   ReactFlow,
   Controls,
@@ -15,8 +16,10 @@ import {
 } from "@/components/automation/workflow/TriggerNode";
 import { ActionNode } from "@/components/automation/workflow/ActionNode";
 import { ActionSelectionDialog } from "@/components/automation/workflow/ActionSelectionDialog";
+import { TriggerSelectionDialog } from "@/components/automation/workflow/TriggerSelectionDialog";
 import { useWorkflowEditor } from "@/hooks/useWorkflowEditor";
 import { WorkflowSidebar } from "@/components/automation/workflow/WorkflowSidebar";
+import { type ActionType } from "@/hooks/workflow/types";
 
 export const WorkflowEditorPage = () => {
   const { slug } = useParams();
@@ -33,22 +36,51 @@ export const WorkflowEditorPage = () => {
     setWorkflowName,
     editingNode,
     isActionSelectionOpen,
+    isTriggerSelectionOpen,
     nodes,
-    edges,
     onNodesChange,
-    onEdgesChange,
-    onConnect,
     handleSaveNodeEdit,
     addActionNode,
+    insertActionAfterNode,
     handleSave,
     handleStartCampaign,
+    handleTriggerChange,
     closeEditDialog,
     openActionSelection,
     closeActionSelection,
+    openTriggerSelection,
+    closeTriggerSelection,
     nodeHandlers,
   } = useWorkflowEditor(initialWorkflowName);
 
-  const handleBack = () => navigate("/automation");
+  const handleBack = () => navigate("/");
+
+  // Track which node is requesting to add an action (for insert-after functionality)
+  const [insertAfterNodeId, setInsertAfterNodeId] = useState<string | null>(
+    null
+  );
+
+  // Handler for inserting after a specific node
+  const handleInsertAfter = (nodeId: string) => {
+    setInsertAfterNodeId(nodeId);
+    openActionSelection();
+  };
+
+  // Handler for adding at the end (traditional behavior)
+  const handleAddAtEnd = () => {
+    setInsertAfterNodeId(null);
+    openActionSelection();
+  };
+
+  // Handler for action selection that uses the appropriate function
+  const handleActionSelection = (actionType: ActionType) => {
+    if (insertAfterNodeId) {
+      insertActionAfterNode(insertAfterNodeId, actionType);
+    } else {
+      addActionNode(actionType);
+    }
+    setInsertAfterNodeId(null);
+  };
 
   // Create node components with handlers
   const nodeTypes = {
@@ -56,14 +88,19 @@ export const WorkflowEditorPage = () => {
       <TriggerNode
         {...props}
         {...nodeHandlers}
-        onAddAction={openActionSelection}
+        selected={editingNode?.id === props.id}
+        onAddAction={handleAddAtEnd}
+        onInsertAfter={handleInsertAfter}
+        onChangeTrigger={openTriggerSelection}
       />
     ),
     action: (props: { data: NodeData; id: string }) => (
       <ActionNode
         {...props}
         {...nodeHandlers}
-        onAddAction={openActionSelection}
+        selected={editingNode?.id === props.id}
+        onAddAction={handleAddAtEnd}
+        onInsertAfter={handleInsertAfter}
       />
     ),
   };
@@ -86,10 +123,7 @@ export const WorkflowEditorPage = () => {
         <div className="flex-1">
           <ReactFlow
             nodes={nodes}
-            edges={edges}
             onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
             nodeTypes={nodeTypes}
             fitView={true}
             fitViewOptions={{
@@ -112,7 +146,13 @@ export const WorkflowEditorPage = () => {
       <ActionSelectionDialog
         open={isActionSelectionOpen}
         onClose={closeActionSelection}
-        onSelectAction={addActionNode}
+        onSelectAction={handleActionSelection}
+      />
+
+      <TriggerSelectionDialog
+        open={isTriggerSelectionOpen}
+        onClose={closeTriggerSelection}
+        onSelectTrigger={handleTriggerChange}
       />
     </div>
   );

@@ -6,6 +6,7 @@ export function useDialogManager() {
   const [editingNode, setEditingNode] = useState<Node<NodeData> | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isActionSelectionOpen, setIsActionSelectionOpen] = useState(false);
+  const [isTriggerSelectionOpen, setIsTriggerSelectionOpen] = useState(false);
 
   const openEditDialog = useCallback((node: Node<NodeData>) => {
     setEditingNode(node);
@@ -25,13 +26,24 @@ export function useDialogManager() {
     setIsActionSelectionOpen(false);
   }, []);
 
+  const openTriggerSelection = useCallback(() => {
+    setIsTriggerSelectionOpen(true);
+  }, []);
+
+  const closeTriggerSelection = useCallback(() => {
+    setIsTriggerSelectionOpen(false);
+  }, []);
+
   return {
     editingNode,
     isEditDialogOpen,
     isActionSelectionOpen,
+    isTriggerSelectionOpen,
     openEditDialog,
     closeEditDialog,
     openActionSelection,
     closeActionSelection,
+    openTriggerSelection,
+    closeTriggerSelection,
   };
 }

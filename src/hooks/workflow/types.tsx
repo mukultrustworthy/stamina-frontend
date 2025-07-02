@@ -1,5 +1,12 @@
 import React from "react";
-import { Users, Mail, Settings } from "lucide-react";
+import {
+  Users,
+  Mail,
+  Settings,
+  Database,
+  Sparkles,
+  CheckCircle,
+} from "lucide-react";
 
 // Specific node data properties
 export interface BaseNodeData {
@@ -51,7 +58,7 @@ export const actionTypeData: Record<ActionType, ActionNodeData> = {
   "send-email": {
     title: "Send Email",
     description: "Send an email to the person",
-    icon: <Mail className="w-5 h-5 text-green-600" />,
+    icon: <Mail className="w-5 h-5" />,
     registryKey: "send_email",
     emailSubject: "Welcome Email",
     emailTemplate:
@@ -60,37 +67,37 @@ export const actionTypeData: Record<ActionType, ActionNodeData> = {
   "create-task": {
     title: "Create Task",
     description: "Create a follow-up task",
-    icon: <Settings className="w-5 h-5 text-green-600" />,
+    icon: <CheckCircle className="w-5 h-5" />,
     registryKey: "create_task",
   },
   "update-lead-status": {
     title: "Update Lead Status",
     description: "Update lead status and properties",
-    icon: <Users className="w-5 h-5 text-green-600" />,
+    icon: <Users className="w-5 h-5" />,
     registryKey: "update_lead_status",
   },
   "http-request": {
     title: "HTTP Request",
     description: "Make HTTP requests to external APIs",
-    icon: <Settings className="w-5 h-5 text-blue-600" />,
+    icon: <Settings className="w-5 h-5" />,
     registryKey: "http_request",
   },
   "ai-generate-text": {
     title: "AI Generate Text",
     description: "Generate text using AI models",
-    icon: <Mail className="w-5 h-5 text-purple-600" />,
+    icon: <Sparkles className="w-5 h-5" />,
     registryKey: "ai_generate_text",
   },
   "database-query": {
     title: "Database Query",
     description: "Execute database queries and operations",
-    icon: <Settings className="w-5 h-5 text-green-600" />,
+    icon: <Database className="w-5 h-5" />,
     registryKey: "database_query",
   },
   "transform-data": {
     title: "Transform Data",
     description: "Transform and manipulate data",
-    icon: <Settings className="w-5 h-5 text-yellow-600" />,
+    icon: <Settings className="w-5 h-5" />,
     registryKey: "transform_data",
   },
 };
