@@ -94,10 +94,8 @@ export const handlers = [
   }),
 
   // POST /api/workflows/:id/execute - Execute workflow
-  http.post("/api/workflows/:id/execute", async ({ params, request }) => {
+  http.post("/api/workflows/:id/execute", async ({ params }) => {
     const { id } = params;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _executionData = await request.json();
 
     const workflow = workflows.find((w) => w.id === id);
     if (!workflow) {
@@ -289,8 +287,8 @@ export const handlers = [
     "/api/workflow-registry/trigger/:triggerKey",
     async ({ params, request }) => {
       const { triggerKey } = params;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _triggerData = await request.json();
+      const triggerData = await request.json();
+      console.log("triggerData", triggerData);
 
       const trigger = mockTriggers.find((t) => t.key === triggerKey);
       if (!trigger) {
