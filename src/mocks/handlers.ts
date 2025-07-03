@@ -287,8 +287,7 @@ export const handlers = [
     "/api/workflow-registry/trigger/:triggerKey",
     async ({ params, request }) => {
       const { triggerKey } = params;
-      const triggerData = await request.json();
-      console.log("triggerData", triggerData);
+      await request.json();
 
       const trigger = mockTriggers.find((t) => t.key === triggerKey);
       if (!trigger) {
