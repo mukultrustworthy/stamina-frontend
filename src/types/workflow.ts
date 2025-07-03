@@ -237,3 +237,62 @@ export interface WorkflowEditorState {
   }>;
   isActive: boolean;
 }
+
+// Campaign Execution Types
+export interface CampaignExecution {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
+  startedAt: string;
+  completedAt?: string;
+  triggerData: Record<string, unknown>;
+  variables?: Record<string, unknown>;
+  userId?: string;
+  currentStepIndex: number;
+  totalSteps: number;
+  steps: CampaignExecutionStep[];
+  logs: CampaignExecutionLog[];
+  error?: string;
+  progress: number; // 0-100
+}
+
+export interface CampaignExecutionStep {
+  id: string;
+  name: string;
+  type: "trigger" | "action" | "condition" | "delay" | "loop";
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: string;
+  duration?: number; // in milliseconds
+  retryCount?: number;
+}
+
+export interface CampaignExecutionLog {
+  id: string;
+  stepId?: string;
+  timestamp: string;
+  level: "info" | "warning" | "error" | "debug";
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export interface CampaignStartRequest {
+  workflowId?: string;
+  workflowName: string;
+  nodes: WorkflowNode[];
+  triggerData?: Record<string, unknown>;
+  variables?: Record<string, unknown>;
+  testMode?: boolean;
+}
+
+export interface CampaignExecutionStats {
+  totalExecutions: number;
+  successfulExecutions: number;
+  failedExecutions: number;
+  averageDuration: number;
+  lastExecutionAt?: string;
+}

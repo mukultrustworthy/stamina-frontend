@@ -15,6 +15,7 @@ import { useWorkflowEditor } from "@/hooks/useWorkflowEditor";
 import { WorkflowSidebar } from "@/components/automation/workflow/WorkflowSidebar";
 import { Node } from "./Node";
 import { useWorkflowActions } from "@/hooks/workflow/useWorkflowActions";
+import type { WorkflowNode } from "@/types/workflow";
 
 export const WorkflowContent = () => {
   const { slug } = useParams();
@@ -43,7 +44,34 @@ export const WorkflowContent = () => {
     closeSelection,
   } = useWorkflowEditor(initialWorkflowName);
 
-  const { handleStartCampaign, handleSave } = useWorkflowActions();
+  const {
+    handleStartCampaign,
+    handleSave,
+    handleCancelExecution,
+    clearExecution,
+    currentExecution,
+    isExecuting,
+  } = useWorkflowActions();
+
+  // Convert ReactFlow Node to WorkflowNode for campaign execution
+  const workflowNodes: WorkflowNode[] = nodes.map((node) => ({
+    id: node.id,
+    type:
+      (node.type as "trigger" | "action" | "condition" | "delay" | "loop") ||
+      "action",
+    position: node.position,
+    data: {
+      title: node.data.title,
+      description: node.data.description,
+      icon: node.data.icon,
+      canDelete: node.data.canDelete,
+      registryKey: node.data.registryKey,
+      configuration: node.data.configuration,
+      onEdit: node.data.onEdit,
+      onDelete: node.data.onDelete,
+      onAddAction: node.data.onAddAction,
+    },
+  }));
 
   const nodeTypes = {
     trigger: (props: { data: NodeData; id: string; selected?: boolean }) => (
@@ -87,6 +115,11 @@ export const WorkflowContent = () => {
         workflowName={workflowName}
         onStartCampaign={handleStartCampaign}
         onSave={handleSave}
+        nodes={workflowNodes}
+        currentExecution={currentExecution}
+        isExecuting={isExecuting}
+        onCancelExecution={handleCancelExecution}
+        onClearExecution={clearExecution}
       />
 
       <div className="flex-1 flex h-[calc(100vh-139px)] relative">
