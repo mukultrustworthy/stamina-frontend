@@ -1,49 +1,43 @@
-import { useState, useCallback } from "react";
-import { type Node } from "@xyflow/react";
-import { type NodeData } from "./types";
+import { useState } from "react";
 
-export function useDialogManager() {
-  const [editingNode, setEditingNode] = useState<Node<NodeData> | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isActionSelectionOpen, setIsActionSelectionOpen] = useState(false);
-  const [isTriggerSelectionOpen, setIsTriggerSelectionOpen] = useState(false);
+/**
+ * Simple hook for managing dialog state
+ */
+export function useDialogState() {
+  const [selectionDialogType, setSelectionDialogType] = useState<
+    "trigger" | "action" | null
+  >(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
 
-  const openEditDialog = useCallback((node: Node<NodeData>) => {
-    setEditingNode(node);
-    setIsEditDialogOpen(true);
-  }, []);
+  const openTriggerSelection = () => setSelectionDialogType("trigger");
+  const openActionSelection = () => setSelectionDialogType("action");
+  const closeSelection = () => setSelectionDialogType(null);
 
-  const closeEditDialog = useCallback(() => {
-    setIsEditDialogOpen(false);
-    setEditingNode(null);
-  }, []);
+  const isSelectionOpen = selectionDialogType !== null;
+  const isTriggerDialogOpen = selectionDialogType === "trigger";
+  const isActionDialogOpen = selectionDialogType === "action";
 
-  const openActionSelection = useCallback(() => {
-    setIsActionSelectionOpen(true);
-  }, []);
+  const openEdit = (nodeId: string) => {
+    setEditingNodeId(nodeId);
+    setIsEditOpen(true);
+  };
 
-  const closeActionSelection = useCallback(() => {
-    setIsActionSelectionOpen(false);
-  }, []);
-
-  const openTriggerSelection = useCallback(() => {
-    setIsTriggerSelectionOpen(true);
-  }, []);
-
-  const closeTriggerSelection = useCallback(() => {
-    setIsTriggerSelectionOpen(false);
-  }, []);
+  const closeEdit = () => {
+    setIsEditOpen(false);
+    setEditingNodeId(null);
+  };
 
   return {
-    editingNode,
-    isEditDialogOpen,
-    isActionSelectionOpen,
-    isTriggerSelectionOpen,
-    openEditDialog,
-    closeEditDialog,
-    openActionSelection,
-    closeActionSelection,
+    isSelectionOpen,
+    isTriggerDialogOpen,
+    isActionDialogOpen,
     openTriggerSelection,
-    closeTriggerSelection,
+    openActionSelection,
+    closeSelection,
+    isEditOpen,
+    editingNodeId,
+    openEdit,
+    closeEdit,
   };
 }

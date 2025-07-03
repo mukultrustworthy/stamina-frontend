@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useCreateWorkflow } from "@/hooks/useWorkflowQueries";
+import { useCreateWorkflow } from "@/hooks/queries/useWorkflowQueries";
 
 const workflowSchema = z.object({
   name: z

@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { useDeleteWorkflow } from "@/hooks/useWorkflowQueries";
+import { useDeleteWorkflow } from "@/hooks/queries/useWorkflowQueries";
 
 interface AutomationTableActionsProps {
   workflowId: string;

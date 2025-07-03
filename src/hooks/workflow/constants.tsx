@@ -6,6 +6,10 @@ import {
   Database,
   Sparkles,
   CheckCircle,
+  Webhook,
+  Clock,
+  Link,
+  User,
 } from "lucide-react";
 import type {
   NodeData,
@@ -13,6 +17,7 @@ import type {
   ActionType,
   ActionNodeData,
 } from "./types";
+import type { TriggerCategory } from "@/types/workflow";
 
 // Layout constants
 export const NODE_VERTICAL_SPACING = 180;
@@ -128,3 +133,33 @@ export const DEFAULT_EMAIL_TEMPLATE =
 
 // Auto-edit delay
 export const AUTO_EDIT_DELAY = 0;
+
+// Trigger type data configuration
+export const triggerTypeData: Record<
+  TriggerCategory,
+  { icon: React.ReactNode }
+> = {
+  webhook: {
+    icon: <Webhook className="w-5 h-5" />,
+  },
+  database: {
+    icon: <Database className="w-5 h-5" />,
+  },
+  schedule: {
+    icon: <Clock className="w-5 h-5" />,
+  },
+  email: {
+    icon: <Mail className="w-5 h-5" />,
+  },
+  external: {
+    icon: <Link className="w-5 h-5" />,
+  },
+  manual: {
+    icon: <User className="w-5 h-5" />,
+  },
+};
+
+// Get trigger icon by category
+export function getTriggerIcon(category: TriggerCategory): React.ReactNode {
+  return triggerTypeData[category]?.icon || <Users className="w-5 h-5" />;
+}

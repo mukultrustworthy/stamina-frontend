@@ -1,6 +1,5 @@
 import React from "react";
 
-// Specific node data properties
 export interface BaseNodeData {
   title: string;
   description: string;
@@ -9,21 +8,20 @@ export interface BaseNodeData {
   onEdit?: (nodeId: string) => void;
   canDelete?: boolean;
   parentId?: string;
-  childId?: string; // Only one child per node
+  childId?: string;
   emailSubject?: string;
   emailTemplate?: string;
   propertyName?: string;
   propertyValue?: string;
-  // Registry information
   registryKey?: string;
+  configuration?: Record<string, unknown>;
 }
 
-// Intersection type for React Flow compatibility while maintaining type safety
 export type NodeData = BaseNodeData & Record<string, unknown>;
 
 export interface NodeRelation {
   parentId?: string;
-  childId?: string; // Only one child per node
+  childId?: string;
 }
 
 export type ActionType =
@@ -34,6 +32,21 @@ export type ActionType =
   | "ai-generate-text"
   | "database-query"
   | "transform-data";
+
+export type TriggerCategory =
+  | "webhook"
+  | "database"
+  | "schedule"
+  | "email"
+  | "external"
+  | "manual";
+
+export interface TriggerNodeData {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  registryKey?: string;
+}
 
 export interface ActionNodeData {
   title: string;

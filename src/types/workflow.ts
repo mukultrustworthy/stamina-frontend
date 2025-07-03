@@ -87,6 +87,8 @@ export interface ActionRegistryResponse {
 export interface TriggerRegistryResponse {
   key: string;
   name: string;
+  icon?: string;
+  iconColor?: string;
   displayName: string;
   description?: string;
   category: TriggerCategory;

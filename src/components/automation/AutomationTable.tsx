@@ -6,9 +6,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AutomationTableRow } from "./AutomationTableRow";
-import { useGetWorkflows } from "@/hooks/useWorkflowQueries";
+import { useGetWorkflows } from "@/hooks/queries/useWorkflowQueries";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAutomationFilters } from "@/hooks/useAutomationFilters";
+import { useAutomationFilters } from "@/hooks/automation/useAutomationFilters";
 
 export function AutomationTable() {
   const { data: workflows, isLoading, error } = useGetWorkflows();

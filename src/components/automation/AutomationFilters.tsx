@@ -13,7 +13,7 @@ import {
   useAutomationFilters,
   automationFilterOptions,
   automationStatusOptions,
-} from "@/hooks/useAutomationFilters";
+} from "@/hooks/automation/useAutomationFilters";
 import { Badge } from "../ui/badge";
 
 export function AutomationFilters() {

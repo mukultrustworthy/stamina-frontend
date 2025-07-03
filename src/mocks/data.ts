@@ -540,6 +540,8 @@ export const mockTriggers: TriggerRegistryResponse[] = [
   {
     key: "lead_created",
     name: "leadCreated",
+    icon: "fa:user-plus",
+    iconColor: "#059669",
     displayName: "Lead Created",
     description: "Triggers when a new lead is created in the system",
     category: "database",
@@ -604,6 +606,8 @@ export const mockTriggers: TriggerRegistryResponse[] = [
   {
     key: "lead_score_updated",
     name: "leadScoreUpdated",
+    icon: "fa:user-plus",
+    iconColor: "#059669",
     displayName: "Lead Score Updated",
     description: "Triggers when a lead score changes",
     category: "database",
@@ -659,6 +663,8 @@ export const mockTriggers: TriggerRegistryResponse[] = [
   {
     key: "campaign_interaction",
     name: "campaignInteraction",
+    icon: "fa:user-plus",
+    iconColor: "#059669",
     displayName: "Campaign Interaction",
     description: "Triggers when someone interacts with a marketing campaign",
     category: "email",
@@ -714,6 +720,8 @@ export const mockTriggers: TriggerRegistryResponse[] = [
   {
     key: "webhook_received",
     name: "webhookReceived",
+    icon: "fa:user-plus",
+    iconColor: "#059669",
     displayName: "Webhook Received",
     description: "Triggers when a webhook endpoint receives data",
     category: "webhook",
@@ -805,6 +813,8 @@ export const mockTriggers: TriggerRegistryResponse[] = [
   {
     key: "schedule_trigger",
     name: "scheduleTrigger",
+    icon: "fa:user-plus",
+    iconColor: "#059669",
     displayName: "Schedule Trigger",
     description: "Triggers at specified time intervals or cron schedule",
     category: "schedule",

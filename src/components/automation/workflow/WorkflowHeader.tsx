@@ -1,28 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Save, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface WorkflowHeaderProps {
-  workflowName: string;
-  onWorkflowNameChange: (name: string) => void;
-  onBack: () => void;
-  onSave: () => void;
   onStartCampaign: () => void;
+  workflowName: string;
+  onSave: () => void;
 }
 
 export function WorkflowHeader({
-  workflowName,
-  onWorkflowNameChange,
-  onBack,
-  onSave,
   onStartCampaign,
+  onSave,
+  workflowName,
 }: WorkflowHeaderProps) {
+  const navigate = useNavigate();
+  const handleBack = () => navigate("/");
+
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
       <div className="flex items-center">
         <Button
           variant="ghost"
           size="sm"
-          onClick={onBack}
+          onClick={handleBack}
           className="text-gray-500 hover:text-gray-700"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -30,12 +30,7 @@ export function WorkflowHeader({
         <div className="flex items-center space-x-1">
           <span className="text-sm text-gray-500">Automation</span>
           <span className="text-sm text-gray-400">/</span>
-          <input
-            type="text"
-            value={workflowName}
-            onChange={(e) => onWorkflowNameChange(e.target.value)}
-            className="text-sm font-semibold bg-transparent border-none outline-none focus:ring-0 text-gray-900 border-b border-gray-200"
-          />
+          <span className="text-sm">{workflowName}</span>
         </div>
       </div>
 
