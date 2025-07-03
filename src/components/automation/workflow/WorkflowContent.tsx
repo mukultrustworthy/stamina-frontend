@@ -36,9 +36,10 @@ export const WorkflowContent = () => {
     handleSaveNodeEdit,
     handleTriggerChange,
     handleActionSelection,
+    handleAddAction,
+    handleInsertAfter,
     deleteNode,
     openTriggerSelection,
-    openActionSelection,
     closeSelection,
   } = useWorkflowEditor(initialWorkflowName);
 
@@ -53,8 +54,8 @@ export const WorkflowContent = () => {
         selected={props.selected}
         onEdit={handleEditNode}
         onDelete={deleteNode}
-        onAddAction={() => openActionSelection()}
-        onInsertAfter={() => openActionSelection()}
+        onAddAction={handleAddAction}
+        onInsertAfter={handleInsertAfter}
         onChangeTrigger={() => openTriggerSelection()}
       />
     ),
@@ -66,8 +67,8 @@ export const WorkflowContent = () => {
         selected={props.selected}
         onEdit={handleEditNode}
         onDelete={deleteNode}
-        onAddAction={() => openActionSelection()}
-        onInsertAfter={() => openActionSelection()}
+        onAddAction={handleAddAction}
+        onInsertAfter={handleInsertAfter}
         onChangeTrigger={() => openTriggerSelection()}
       />
     ),

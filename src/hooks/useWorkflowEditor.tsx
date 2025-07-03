@@ -2,6 +2,7 @@ import { useWorkflowState } from "./workflow/useWorkflowState";
 import { useDialogState } from "./workflow/useDialogManager";
 import { useNodeOperations } from "./workflow/useNodeOperations";
 import type { ActionType } from "./workflow/types";
+import { useState } from "react";
 
 export function useWorkflowEditor(initialWorkflowName: string) {
   const { workflowName, nodes, setNodes, onNodesChange } =
@@ -16,8 +17,12 @@ export function useWorkflowEditor(initialWorkflowName: string) {
     closeSelection,
     editingNodeId,
     openEdit,
-    closeEdit,
   } = useDialogState();
+
+  // Track which node to insert after
+  const [insertAfterNodeId, setInsertAfterNodeId] = useState<string | null>(
+    null
+  );
 
   const { updateNode, deleteNode, addActionNode, insertActionAfter } =
     useNodeOperations({ nodes, setNodes });
@@ -31,7 +36,6 @@ export function useWorkflowEditor(initialWorkflowName: string) {
     updates: Record<string, unknown>
   ) => {
     updateNode(nodeId, updates);
-    closeEdit();
   };
 
   const handleTriggerChange = (trigger: {
@@ -48,13 +52,30 @@ export function useWorkflowEditor(initialWorkflowName: string) {
   };
 
   const handleActionSelection = (actionType: ActionType) => {
-    addActionNode(actionType);
+    if (insertAfterNodeId) {
+      // Insert after a specific node
+      insertActionAfter(insertAfterNodeId, actionType);
+      setInsertAfterNodeId(null);
+    } else {
+      // Add to the end
+      addActionNode(actionType);
+    }
     closeSelection();
   };
 
   const handleInsertAction = (afterNodeId: string, actionType: ActionType) => {
     insertActionAfter(afterNodeId, actionType);
     closeSelection();
+  };
+
+  const handleAddAction = () => {
+    setInsertAfterNodeId(null);
+    openActionSelection();
+  };
+
+  const handleInsertAfter = (nodeId: string) => {
+    setInsertAfterNodeId(nodeId);
+    openActionSelection();
   };
 
   return {
@@ -73,6 +94,8 @@ export function useWorkflowEditor(initialWorkflowName: string) {
     handleTriggerChange,
     handleActionSelection,
     handleInsertAction,
+    handleAddAction,
+    handleInsertAfter,
     deleteNode,
     openTriggerSelection,
     openActionSelection,

@@ -93,10 +93,10 @@ export function useNodeOperations({ nodes, setNodes }: UseNodeOperationsProps) {
         // Remove the target node
         const nodesWithoutDeleted = prevNodes.filter((n) => n.id !== nodeId);
 
-        // Update connections: connect parent directly to child (if both exist)
-        return nodesWithoutDeleted.map((node) => {
+        // Update connections and reposition nodes
+        const updatedNodes = nodesWithoutDeleted.map((node) => {
           if (parentId && node.id === parentId) {
-            // Update parent: remove or replace childId
+            // Update parent: connect to child (or remove childId if no child)
             const newData = { ...node.data };
             if (childId) {
               newData.childId = childId;
@@ -107,7 +107,7 @@ export function useNodeOperations({ nodes, setNodes }: UseNodeOperationsProps) {
           }
 
           if (childId && node.id === childId) {
-            // Update child: remove or replace parentId
+            // Update child: connect to parent (or remove parentId if no parent)
             const newData = { ...node.data };
             if (parentId) {
               newData.parentId = parentId;
@@ -117,6 +117,21 @@ export function useNodeOperations({ nodes, setNodes }: UseNodeOperationsProps) {
             return nodeHelpers.updateNodeData(node, newData);
           }
 
+          return node;
+        });
+
+        // Reposition nodes to fill the gap
+        const deletedNodeY = nodeToDelete.position.y;
+        return updatedNodes.map((node) => {
+          if (node.position.y > deletedNodeY) {
+            return {
+              ...node,
+              position: {
+                ...node.position,
+                y: node.position.y - NODE_VERTICAL_SPACING,
+              },
+            };
+          }
           return node;
         });
       });
@@ -158,8 +173,10 @@ export function useNodeOperations({ nodes, setNodes }: UseNodeOperationsProps) {
       if (!afterNode) return;
 
       const newNodeId = `action-${Date.now()}`;
-      const newPosition = nodeHelpers.calculateNewPosition(afterNode);
       const oldChildId = afterNode.data.childId;
+
+      // Calculate position - right after the reference node
+      const newPosition = nodeHelpers.calculateNewPosition(afterNode);
 
       const newNode = nodeHelpers.createActionNode(
         newNodeId,
@@ -170,23 +187,34 @@ export function useNodeOperations({ nodes, setNodes }: UseNodeOperationsProps) {
       );
 
       setNodes((prevNodes) => {
-        // Shift nodes below the insertion point
-        const shiftedNodes = nodeHelpers.shiftNodesDown(
-          prevNodes,
-          afterNode.position.y
-        );
+        // First, shift all nodes below the insertion point down
+        const shiftedNodes = prevNodes.map((node) => {
+          if (node.position.y > afterNode.position.y) {
+            return {
+              ...node,
+              position: {
+                ...node.position,
+                y: node.position.y + NODE_VERTICAL_SPACING,
+              },
+            };
+          }
+          return node;
+        });
 
-        // Update connections
+        // Update the parent-child relationships
         const updatedNodes = shiftedNodes.map((node) => {
+          // Update the afterNode to point to the new node
           if (node.id === afterNodeId) {
             return nodeHelpers.updateNodeData(node, { childId: newNodeId });
           }
+          // Update the old child to point to the new node as parent
           if (oldChildId && node.id === oldChildId) {
             return nodeHelpers.updateNodeData(node, { parentId: newNodeId });
           }
           return node;
         });
 
+        // Add the new node
         return [...updatedNodes, newNode];
       });
 
