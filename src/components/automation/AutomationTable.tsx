@@ -8,23 +8,13 @@ import {
 import { AutomationTableRow } from "./AutomationTableRow";
 import { useGetWorkflows } from "@/hooks/useWorkflowQueries";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAutomationFilters } from "@/hooks/useAutomationFilters";
 
-interface AutomationTableProps {
-  // Optional prop to allow external filtering
-  searchTerm?: string;
-}
-
-export function AutomationTable({ searchTerm }: AutomationTableProps) {
+export function AutomationTable() {
   const { data: workflows, isLoading, error } = useGetWorkflows();
-
-  // Filter workflows based on search term
-  const filteredWorkflows =
-    workflows?.filter((workflow) =>
-      searchTerm
-        ? workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          workflow.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        : true
-    ) || [];
+  const { getProcessedWorkflows, getEmptyStateMessage } =
+    useAutomationFilters();
+  const processedWorkflows = getProcessedWorkflows(workflows);
 
   if (isLoading) {
     return (
@@ -38,9 +28,6 @@ export function AutomationTable({ searchTerm }: AutomationTableProps) {
                 </TableHead>
                 <TableHead className="font-medium text-muted-foreground">
                   Status
-                </TableHead>
-                <TableHead className="font-medium text-muted-foreground">
-                  Segment
                 </TableHead>
                 <TableHead className="font-medium text-muted-foreground">
                   Created On
@@ -106,9 +93,6 @@ export function AutomationTable({ searchTerm }: AutomationTableProps) {
                 Status
               </TableHead>
               <TableHead className="font-medium text-muted-foreground">
-                Segment
-              </TableHead>
-              <TableHead className="font-medium text-muted-foreground">
                 Created On
               </TableHead>
               <TableHead className="font-medium text-muted-foreground">
@@ -118,19 +102,17 @@ export function AutomationTable({ searchTerm }: AutomationTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredWorkflows.length === 0 ? (
+            {processedWorkflows.length === 0 ? (
               <TableRow>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  {searchTerm
-                    ? "No workflows match your search."
-                    : "No workflows found. Create your first workflow to get started."}
+                  {getEmptyStateMessage()}
                 </td>
               </TableRow>
             ) : (
-              filteredWorkflows.map((workflow) => (
+              processedWorkflows.map((workflow) => (
                 <AutomationTableRow key={workflow.id} workflow={workflow} />
               ))
             )}

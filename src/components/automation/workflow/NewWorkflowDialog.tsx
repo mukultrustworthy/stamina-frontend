@@ -20,15 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
 import { useCreateWorkflow } from "@/hooks/useWorkflowQueries";
-import type { WorkflowSegment } from "@/types/workflow";
 
 const workflowSchema = z.object({
   name: z
@@ -36,7 +28,6 @@ const workflowSchema = z.object({
     .min(1, "Workflow name is required")
     .min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
-  segment: z.enum(["CRM", "SALES", "MARKETING"]),
 });
 
 type WorkflowFormData = z.infer<typeof workflowSchema>;
@@ -57,16 +48,13 @@ export function NewWorkflowDialog({
     defaultValues: {
       name: "",
       description: "",
-      segment: "CRM",
     },
   });
 
   const createWorkflowMutation = useCreateWorkflow((workflow) => {
-    // Reset form and close dialog
     form.reset();
     onOpenChange(false);
 
-    // Navigate to workflow editor with the workflow ID
     navigate(`/workflow/${workflow.id}`, {
       state: {
         workflowName: workflow.name,
@@ -77,18 +65,16 @@ export function NewWorkflowDialog({
   });
 
   const handleSubmit = async (data: WorkflowFormData) => {
-    // Create a basic workflow structure with minimal trigger and steps
     const workflowPayload = {
       name: data.name,
       description: data.description,
-      segment: data.segment as WorkflowSegment,
       trigger: {
-        triggerKey: "manual_trigger", // Default trigger for new workflows
+        triggerKey: "manual_trigger",
         properties: {},
       },
-      steps: [], // Start with empty steps - will be configured in editor
-      edges: [], // Start with empty edges
-      isActive: false, // New workflows start inactive
+      steps: [],
+      edges: [],
+      isActive: false,
     };
 
     createWorkflowMutation.mutate(workflowPayload);
@@ -101,7 +87,7 @@ export function NewWorkflowDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Workflow</DialogTitle>
           <DialogDescription>
@@ -145,46 +131,6 @@ export function NewWorkflowDialog({
                       {...field}
                       disabled={createWorkflowMutation.isPending}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="segment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Segment</FormLabel>
-                  <FormControl>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between"
-                          disabled={createWorkflowMutation.isPending}
-                        >
-                          {field.value}
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-full">
-                        <DropdownMenuItem onClick={() => field.onChange("CRM")}>
-                          CRM
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => field.onChange("SALES")}
-                        >
-                          SALES
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => field.onChange("MARKETING")}
-                        >
-                          MARKETING
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

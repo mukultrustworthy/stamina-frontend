@@ -11,7 +11,9 @@ import type {
   EventSource,
 } from "@/types/workflow";
 
-// Query Keys
+/**
+ * Query Keys
+ */
 export const workflowQueryKeys = {
   all: ["workflows"] as const,
   lists: () => [...workflowQueryKeys.all, "list"] as const,
@@ -49,14 +51,14 @@ export const workflowQueryKeys = {
 export const useGetWorkflows = () => {
   return useQuery({
     queryKey: workflowQueryKeys.lists(),
-    queryFn: () => workflowService.listWorkflows(),
+    queryFn: () => workflowService.workflows.listWorkflows(),
   });
 };
 
 export const useGetWorkflow = (id: string, enabled = true) => {
   return useQuery({
     queryKey: workflowQueryKeys.detail(id),
-    queryFn: () => workflowService.getWorkflow(id),
+    queryFn: () => workflowService.workflows.getWorkflow(id),
     enabled: enabled && !!id,
   });
 };
@@ -65,21 +67,22 @@ export const useGetWorkflow = (id: string, enabled = true) => {
 export const useGetActions = (active?: boolean) => {
   return useQuery({
     queryKey: workflowQueryKeys.actions.list({ active }),
-    queryFn: () => workflowService.actions.getAllActions(active),
+    queryFn: () => workflowService.actionRegistry.getAllActions(active),
   });
 };
 
 export const useGetActionsByCategory = (category: ActionCategory) => {
   return useQuery({
     queryKey: workflowQueryKeys.actions.list({ category }),
-    queryFn: () => workflowService.actions.getActionsByCategory(category),
+    queryFn: () =>
+      workflowService.actionRegistry.getActionsByCategory(category),
   });
 };
 
 export const useGetAction = (key: string, enabled = true) => {
   return useQuery({
     queryKey: workflowQueryKeys.actions.detail(key),
-    queryFn: () => workflowService.actions.getActionByKey(key),
+    queryFn: () => workflowService.actionRegistry.getActionByKey(key),
     enabled: enabled && !!key,
   });
 };
@@ -88,14 +91,15 @@ export const useGetAction = (key: string, enabled = true) => {
 export const useGetTriggers = (active?: boolean) => {
   return useQuery({
     queryKey: workflowQueryKeys.triggers.list({ active }),
-    queryFn: () => workflowService.triggers.getAllTriggers(active),
+    queryFn: () => workflowService.triggerRegistry.getAllTriggers(active),
   });
 };
 
 export const useGetTriggersByCategory = (category: TriggerCategory) => {
   return useQuery({
     queryKey: workflowQueryKeys.triggers.list({ category }),
-    queryFn: () => workflowService.triggers.getTriggersByCategory(category),
+    queryFn: () =>
+      workflowService.triggerRegistry.getTriggersByCategory(category),
   });
 };
 
@@ -103,14 +107,14 @@ export const useGetTriggersByEventSource = (eventSource: EventSource) => {
   return useQuery({
     queryKey: workflowQueryKeys.triggers.list({ eventSource }),
     queryFn: () =>
-      workflowService.triggers.getTriggersByEventSource(eventSource),
+      workflowService.triggerRegistry.getTriggersByEventSource(eventSource),
   });
 };
 
 export const useGetTrigger = (key: string, enabled = true) => {
   return useQuery({
     queryKey: workflowQueryKeys.triggers.detail(key),
-    queryFn: () => workflowService.triggers.getTriggerByKey(key),
+    queryFn: () => workflowService.triggerRegistry.getTriggerByKey(key),
     enabled: enabled && !!key,
   });
 };
@@ -119,14 +123,14 @@ export const useGetTrigger = (key: string, enabled = true) => {
 export const useGetActionPropertySchema = () => {
   return useQuery({
     queryKey: workflowQueryKeys.schemas.actionProperties,
-    queryFn: () => workflowService.schemas.getActionPropertySchema(),
+    queryFn: () => workflowService.schema.getActionPropertySchema(),
   });
 };
 
 export const useGetTriggerPropertySchema = () => {
   return useQuery({
     queryKey: workflowQueryKeys.schemas.triggerProperties,
-    queryFn: () => workflowService.schemas.getTriggerPropertySchema(),
+    queryFn: () => workflowService.schema.getTriggerPropertySchema(),
   });
 };
 
@@ -138,7 +142,7 @@ export const useCreateWorkflow = (
 
   return useMutation({
     mutationFn: (workflow: CreateWorkflowDto) =>
-      workflowService.createWorkflow(workflow),
+      workflowService.workflows.createWorkflow(workflow),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
       toast.success("Workflow created successfully");
@@ -158,7 +162,7 @@ export const useUpdateWorkflow = (
 
   return useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: UpdateWorkflowDto }) =>
-      workflowService.updateWorkflow(id, updates),
+      workflowService.workflows.updateWorkflow(id, updates),
     onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.detail(id) });
@@ -176,7 +180,7 @@ export const useDeleteWorkflow = (onSuccessCallback?: () => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => workflowService.deleteWorkflow(id),
+    mutationFn: (id: string) => workflowService.workflows.deleteWorkflow(id),
     onSuccess: (_, id) => {
       queryClient.removeQueries({ queryKey: workflowQueryKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: workflowQueryKeys.lists() });
@@ -198,7 +202,7 @@ export const useExecuteWorkflow = (onSuccessCallback?: () => void) => {
     }: {
       id: string;
       execution: WorkflowExecution;
-    }) => workflowService.executeWorkflow(id, execution),
+    }) => workflowService.workflows.executeWorkflow(id, execution),
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Workflow executed successfully");

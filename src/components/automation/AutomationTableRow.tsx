@@ -3,6 +3,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { AutomationTableActions } from "./AutomationTableActions";
 import { useNavigate } from "react-router-dom";
 import type { WorkflowResponse } from "@/types/workflow";
+import { formatDate } from "@/lib/utils";
 
 interface AutomationTableRowProps {
   workflow: WorkflowResponse;
@@ -10,14 +11,6 @@ interface AutomationTableRowProps {
 
 export function AutomationTableRow({ workflow }: AutomationTableRowProps) {
   const navigate = useNavigate();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   return (
     <TableRow
@@ -49,11 +42,6 @@ export function AutomationTableRow({ workflow }: AutomationTableRowProps) {
             }`}
           />
           {workflow.isActive ? "Active" : "Inactive"}
-        </Badge>
-      </TableCell>
-      <TableCell className="text-muted-foreground">
-        <Badge variant="outline" className="font-mono">
-          {workflow.segment}
         </Badge>
       </TableCell>
       <TableCell className="text-muted-foreground">

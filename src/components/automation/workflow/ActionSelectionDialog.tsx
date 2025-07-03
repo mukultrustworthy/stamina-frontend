@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { ActionType } from "@/hooks/workflow/types";
-import { actionTypeData } from "@/hooks/workflow/types";
+import { actionTypeData } from "@/hooks/workflow/constants";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";

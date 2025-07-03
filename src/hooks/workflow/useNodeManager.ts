@@ -4,9 +4,13 @@ import {
   type NodeData,
   type NodeRelation,
   type ActionType,
-  actionTypeData,
   type ActionNodeData,
 } from "./types";
+import {
+  actionTypeData,
+  DEFAULT_TRIGGER_ID,
+  NODE_VERTICAL_SPACING,
+} from "./constants";
 
 interface UseNodeManagerProps {
   nodes: Node<NodeData>[];
@@ -127,7 +131,7 @@ export function useNodeManager({
   // Find the leaf node (node with no child) in the chain
   const findLeafNode = useCallback(() => {
     // Start from trigger and follow the chain to find the leaf
-    let currentNodeId = "trigger-1";
+    let currentNodeId = DEFAULT_TRIGGER_ID;
 
     while (nodeRelations[currentNodeId]?.childId) {
       currentNodeId = nodeRelations[currentNodeId].childId!;
@@ -155,7 +159,7 @@ export function useNodeManager({
         type: "action",
         position: {
           x: leafNode.position.x,
-          y: leafNode.position.y + 200, // Vertical spacing
+          y: leafNode.position.y + NODE_VERTICAL_SPACING, // Vertical spacing
         },
         draggable: false,
         data: {

@@ -1,7 +1,5 @@
 // Workflow API Types based on swagger documentation
 
-export type WorkflowSegment = "CRM" | "SALES" | "MARKETING";
-
 export type ActionCategory =
   | "internal"
   | "external"
@@ -158,7 +156,6 @@ export interface WorkflowEdge {
 export interface CreateWorkflowDto {
   name: string;
   description?: string;
-  segment: WorkflowSegment;
   trigger: TriggerConfiguration;
   steps: WorkflowStep[];
   edges: WorkflowEdge[];
@@ -169,7 +166,6 @@ export interface CreateWorkflowDto {
 export interface UpdateWorkflowDto {
   name?: string;
   description?: string;
-  segment?: WorkflowSegment;
   trigger?: TriggerConfiguration;
   steps?: WorkflowStep[];
   edges?: WorkflowEdge[];
@@ -180,7 +176,6 @@ export interface WorkflowResponse {
   id: string;
   name: string;
   description?: string;
-  segment: WorkflowSegment;
   latestVersion: number;
   isActive: boolean;
   createdBy?: string;
@@ -229,7 +224,6 @@ export interface WorkflowEditorState {
   workflowId?: string;
   name: string;
   description?: string;
-  segment: WorkflowSegment;
   nodes: WorkflowNode[];
   edges: Array<{
     id: string;

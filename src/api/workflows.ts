@@ -11,38 +11,15 @@ import type {
   EventSource,
   PropertySchema,
 } from "@/types/workflow";
+import { apiRequest } from "./handler";
 
-const API_BASE_URL = "/api";
-
-// Generic API request helper
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API Error: ${response.status} - ${errorText}`);
-  }
-
-  // Handle 204 No Content responses
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
-}
-
-// Workflow Management API
+/**
+ * Workflow Management API
+ */
 export const workflowApi = {
-  // Create a new workflow
+  /**
+   * Create a new workflow
+   */
   createWorkflow: async (
     workflow: CreateWorkflowDto
   ): Promise<WorkflowResponse> => {
@@ -52,17 +29,23 @@ export const workflowApi = {
     });
   },
 
-  // Get all workflows
+  /**
+   * Get all workflows
+   */
   listWorkflows: async (): Promise<WorkflowResponse[]> => {
     return apiRequest<WorkflowResponse[]>("/workflows");
   },
 
-  // Get workflow by ID
+  /**
+   * Get workflow by ID
+   */
   getWorkflow: async (id: string): Promise<WorkflowResponse> => {
     return apiRequest<WorkflowResponse>(`/workflows/${id}`);
   },
 
-  // Update workflow
+  /**
+   * Update workflow
+   */
   updateWorkflow: async (
     id: string,
     updates: UpdateWorkflowDto
@@ -73,14 +56,18 @@ export const workflowApi = {
     });
   },
 
-  // Delete workflow
+  /**
+   * Delete workflow
+   */
   deleteWorkflow: async (id: string): Promise<void> => {
     return apiRequest<void>(`/workflows/${id}`, {
       method: "DELETE",
     });
   },
 
-  // Execute workflow manually
+  /**
+   * Execute workflow manually
+   */
   executeWorkflow: async (
     id: string,
     execution: WorkflowExecution
@@ -92,9 +79,13 @@ export const workflowApi = {
   },
 };
 
-// Workflow Registry API for Actions
+/**
+ * Workflow Registry API for Actions
+ */
 export const actionRegistryApi = {
-  // Get all actions
+  /**
+   * Get all actions
+   */
   getAllActions: async (
     active?: boolean
   ): Promise<ActionRegistryResponse[]> => {
@@ -104,14 +95,18 @@ export const actionRegistryApi = {
     );
   },
 
-  // Get action by key
+  /**
+   * Get action by key
+   */
   getActionByKey: async (key: string): Promise<ActionRegistryResponse> => {
     return apiRequest<ActionRegistryResponse>(
       `/workflow-registry/actions/${key}`
     );
   },
 
-  // Get actions by category
+  /**
+   * Get actions by category
+   */
   getActionsByCategory: async (
     category: ActionCategory
   ): Promise<ActionRegistryResponse[]> => {
@@ -120,7 +115,9 @@ export const actionRegistryApi = {
     );
   },
 
-  // Get action with resolved schema
+  /**
+   * Get action with resolved schema
+   */
   getActionWithResolvedSchema: async (
     key: string,
     tenantId: string,
@@ -132,9 +129,13 @@ export const actionRegistryApi = {
   },
 };
 
-// Workflow Registry API for Triggers
+/**
+ * Workflow Registry API for Triggers
+ */
 export const triggerRegistryApi = {
-  // Get all triggers
+  /**
+   * Get all triggers
+   */
   getAllTriggers: async (
     active?: boolean
   ): Promise<TriggerRegistryResponse[]> => {
@@ -144,14 +145,18 @@ export const triggerRegistryApi = {
     );
   },
 
-  // Get trigger by key
+  /**
+   * Get trigger by key
+   */
   getTriggerByKey: async (key: string): Promise<TriggerRegistryResponse> => {
     return apiRequest<TriggerRegistryResponse>(
       `/workflow-registry/triggers/${key}`
     );
   },
 
-  // Get triggers by category
+  /**
+   * Get triggers by category
+   */
   getTriggersByCategory: async (
     category: TriggerCategory
   ): Promise<TriggerRegistryResponse[]> => {
@@ -160,7 +165,9 @@ export const triggerRegistryApi = {
     );
   },
 
-  // Get triggers by event source
+  /**
+   * Get triggers by event source
+   */
   getTriggersByEventSource: async (
     eventSource: EventSource
   ): Promise<TriggerRegistryResponse[]> => {
@@ -169,7 +176,9 @@ export const triggerRegistryApi = {
     );
   },
 
-  // Get trigger with resolved schema
+  /**
+   * Get trigger with resolved schema
+   */
   getTriggerWithResolvedSchema: async (
     key: string,
     tenantId: string,
@@ -180,7 +189,9 @@ export const triggerRegistryApi = {
     );
   },
 
-  // Process trigger event
+  /**
+   * Process trigger event
+   */
   processTrigger: async (
     triggerKey: string,
     data: {
@@ -198,9 +209,13 @@ export const triggerRegistryApi = {
   },
 };
 
-// Schema API for form generation
+/**
+ * Schema API for form generation
+ */
 export const schemaApi = {
-  // Get action property schema
+  /**
+   * Get action property schema
+   */
   getActionPropertySchema: async (): Promise<{
     properties: PropertySchema[];
   }> => {
@@ -209,7 +224,9 @@ export const schemaApi = {
     );
   },
 
-  // Get trigger property schema
+  /**
+   * Get trigger property schema
+   */
   getTriggerPropertySchema: async (): Promise<{
     properties: PropertySchema[];
   }> => {
@@ -219,10 +236,12 @@ export const schemaApi = {
   },
 };
 
-// Combined export for convenience
+/**
+ * Combined export for convenience
+ */
 export const workflowService = {
-  ...workflowApi,
-  actions: actionRegistryApi,
-  triggers: triggerRegistryApi,
-  schemas: schemaApi,
+  workflows: workflowApi,
+  actionRegistry: actionRegistryApi,
+  triggerRegistry: triggerRegistryApi,
+  schema: schemaApi,
 };
